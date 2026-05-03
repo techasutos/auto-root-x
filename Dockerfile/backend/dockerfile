@@ -1,0 +1,26 @@
+FROM openjdk:17-slim AS builder
+ARG MAVEN_VERSION=3.9.9
+WORKDIR /build
+
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends curl ca-certificates tar \
+	&& rm -rf /var/lib/apt/lists/* \
+	&& curl -fsSL "https://archive.apache.org/dist/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz" \
+	| tar -xz -C /opt \
+	&& ln -s "/opt/apache-maven-${MAVEN_VERSION}/bin/mvn" /usr/local/bin/mvn
+
+COPY pom.xml .
+COPY src ./src
+
+RUN mvn -q -DskipTests package
+
+FROM openjdk:17-jdk-slim
+WORKDIR /app
+
+RUN useradd -r -u 10001 appuser
+
+COPY --from=builder /build/target/*.jar app.jar
+
+USER 10001
+EXPOSE 8080
+ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75", "-jar", "/app/app.jar"]

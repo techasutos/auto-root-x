@@ -1,0 +1,80 @@
+# -----------------------------
+# OS / Editor
+# -----------------------------
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# -----------------------------
+# Logs / temp
+# -----------------------------
+*.log
+logs/
+*.tmp
+*.temp
+
+# -----------------------------
+# Environment / secrets
+# -----------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.jks
+
+# -----------------------------
+# Java / Maven / Spring Boot
+# -----------------------------
+**/target/
+autoroot-x/target/
+**/.mvn/timing.properties
+**/.mvn/wrapper/maven-wrapper.jar
+
+# -----------------------------
+# Node / Vite / React
+# -----------------------------
+**/node_modules/
+**/dist/
+**/build/
+autorootx-ui/dist/
+autorootx-ui/build/
+**/.npm/
+**/.pnpm-store/
+**/.cache/
+**/coverage/
+
+# -----------------------------
+# Terraform
+# -----------------------------
+**/.terraform/
+**/.terraform.lock.hcl
+**/*.tfstate
+**/*.tfstate.*
+**/crash.log
+**/override.tf
+**/override.tf.json
+**/*_override.tf
+**/*_override.tf.json
+**/*.tfvars
+**/*.tfvars.json
+!**/*.tfvars.example
+
+# -----------------------------
+# Kubernetes / Helm artifacts
+# -----------------------------
+**/*.kubeconfig
+**/kubeconfig
+**/helm-release-values*.yaml
+
+# -----------------------------
+# Misc generated files
+# -----------------------------
+*.bak
+*.orig
+*.rej
