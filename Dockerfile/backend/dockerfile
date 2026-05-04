@@ -1,4 +1,4 @@
-FROM openjdk:17-jdk-slim AS builder
+FROM eclipse-temurin:17-jdk-jammy AS builder
 ARG MAVEN_VERSION=3.9.9
 WORKDIR /build
 
@@ -14,7 +14,7 @@ COPY src ./src
 
 RUN mvn -q -DskipTests package
 
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 
 RUN useradd -r -u 10001 appuser
