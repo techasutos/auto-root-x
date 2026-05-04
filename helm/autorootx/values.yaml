@@ -18,6 +18,7 @@ backend:
   serviceAccount:
     create: true
     name: ""
+    annotations: {}
   service:
     type: ClusterIP
     port: 8080

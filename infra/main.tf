@@ -11,7 +11,10 @@ resource "google_project_service" "apis" {
     "monitoring.googleapis.com",
     "aiplatform.googleapis.com",
     "artifactregistry.googleapis.com",
-    "iam.googleapis.com"
+    "iam.googleapis.com",
+    "iamcredentials.googleapis.com",
+    "secretmanager.googleapis.com",
+    "sts.googleapis.com"
   ])
   project            = var.project_id
   service            = each.key
@@ -60,6 +63,11 @@ resource "google_service_account" "gke_nodes" {
   display_name = "AutoRootX GKE Node Pool"
 }
 
+resource "google_service_account" "backend_workload" {
+  account_id   = "autorootx-backend"
+  display_name = "AutoRootX Backend Workload"
+}
+
 resource "google_project_iam_member" "gke_nodes_logging" {
   project = var.project_id
   role    = "roles/logging.logWriter"
@@ -76,6 +84,30 @@ resource "google_project_iam_member" "gke_nodes_artifactregistry" {
   project = var.project_id
   role    = "roles/artifactregistry.reader"
   member  = "serviceAccount:${google_service_account.gke_nodes.email}"
+}
+
+resource "google_project_iam_member" "backend_workload_logging" {
+  project = var.project_id
+  role    = "roles/logging.viewer"
+  member  = "serviceAccount:${google_service_account.backend_workload.email}"
+}
+
+resource "google_project_iam_member" "backend_workload_vertex_ai" {
+  project = var.project_id
+  role    = "roles/aiplatform.user"
+  member  = "serviceAccount:${google_service_account.backend_workload.email}"
+}
+
+resource "google_project_iam_member" "backend_workload_secretmanager" {
+  project = var.project_id
+  role    = "roles/secretmanager.secretAccessor"
+  member  = "serviceAccount:${google_service_account.backend_workload.email}"
+}
+
+resource "google_service_account_iam_member" "backend_workload_identity" {
+  service_account_id = google_service_account.backend_workload.name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[${var.k8s_namespace}/${var.backend_ksa_name}]"
 }
 
 resource "google_container_node_pool" "nodes" {

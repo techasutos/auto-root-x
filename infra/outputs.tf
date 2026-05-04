@@ -27,3 +27,8 @@ output "workload_identity_pool" {
   description = "Workload Identity pool for Kubernetes service accounts"
   value       = "${var.project_id}.svc.id.goog"
 }
+
+output "backend_workload_service_account" {
+  description = "Google service account used by the backend workload via Workload Identity"
+  value       = google_service_account.backend_workload.email
+}

@@ -74,3 +74,15 @@ variable "deletion_protection" {
   type        = bool
   default     = false
 }
+
+variable "k8s_namespace" {
+  description = "Kubernetes namespace used by the Helm release"
+  type        = string
+  default     = "autorootx"
+}
+
+variable "backend_ksa_name" {
+  description = "Kubernetes service account name used by the backend workload"
+  type        = string
+  default     = "autorootx-backend"
+}
