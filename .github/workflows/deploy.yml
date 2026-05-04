@@ -89,6 +89,8 @@ jobs:
             --namespace ${HELM_NAMESPACE} \
             --set backend.serviceAccount.name=autorootx-backend \
             --set-string 'backend.serviceAccount.annotations.iam\.gke\.io/gcp-service-account=autorootx-backend@'"${PROJECT_ID}"'.iam.gserviceaccount.com' \
+            --set backend.config.gcpProject=${PROJECT_ID} \
+            --set backend.config.gcpRegion=${REGION} \
             --set backend.image.repository=${REGION}-docker.pkg.dev/${PROJECT_ID}/${GAR_REPOSITORY}/backend \
             --set backend.image.tag=${GITHUB_SHA} \
             --set frontend.image.repository=${REGION}-docker.pkg.dev/${PROJECT_ID}/${GAR_REPOSITORY}/frontend \

@@ -46,7 +46,7 @@ spec:
           securityContext:
             {{- toYaml .Values.frontend.securityContext | nindent 12 }}
           ports:
-            - containerPort: 80
+            - containerPort: {{ .Values.frontend.containerPort }}
               name: http
           readinessProbe:
             httpGet:

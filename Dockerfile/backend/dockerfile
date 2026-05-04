@@ -1,10 +1,8 @@
-FROM eclipse-temurin:17-jdk-jammy AS builder
+FROM eclipse-temurin:17-jdk-alpine AS builder
 ARG MAVEN_VERSION=3.9.9
 WORKDIR /build
 
-RUN apt-get update \
-	&& apt-get install -y --no-install-recommends curl ca-certificates tar \
-	&& rm -rf /var/lib/apt/lists/* \
+RUN apk add --no-cache curl ca-certificates tar \
 	&& curl -fsSL "https://archive.apache.org/dist/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz" \
 	| tar -xz -C /opt \
 	&& ln -s "/opt/apache-maven-${MAVEN_VERSION}/bin/mvn" /usr/local/bin/mvn
@@ -14,10 +12,10 @@ COPY src ./src
 
 RUN mvn -q -DskipTests package
 
-FROM eclipse-temurin:17-jre-jammy
+FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
-RUN useradd -r -u 10001 appuser
+RUN adduser -D -u 10001 appuser
 
 COPY --from=builder /build/target/*.jar app.jar
 

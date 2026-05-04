@@ -7,13 +7,10 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-FROM nginx:1.27-alpine
+FROM nginxinc/nginx-unprivileged:1.27-alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-RUN addgroup -S web && adduser -S web -G web \
-	&& chown -R web:web /usr/share/nginx/html /var/cache/nginx /var/run
+USER 101
 
-USER web
-
-EXPOSE 80
+EXPOSE 8080
 CMD ["nginx", "-g", "daemon off;"]

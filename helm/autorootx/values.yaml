@@ -49,8 +49,8 @@ backend:
     - name: GCP_REGION
       value: us-central1
   config:
-    appCorsAllowedOrigins: "https://example.com"
-    gcpProject: "my-gcp-project"
+    appCorsAllowedOrigins: "*"
+    gcpProject: "auto-root-x-495307"
     gcpRegion: "us-central1"
     vertexModel: "gemini-1.5-pro"
     serviceNowMockMode: "true"
@@ -70,6 +70,7 @@ frontend:
     repository: us-central1-docker.pkg.dev/YOUR_PROJECT/autorootx/frontend
     tag: latest
     pullPolicy: IfNotPresent
+  containerPort: 8080
   service:
     type: ClusterIP
     port: 80
@@ -87,6 +88,9 @@ frontend:
     targetCPUUtilizationPercentage: 80
   podSecurityContext:
     runAsNonRoot: true
+    runAsUser: 101
+    runAsGroup: 101
+    fsGroup: 101
     seccompProfile:
       type: RuntimeDefault
   securityContext:
