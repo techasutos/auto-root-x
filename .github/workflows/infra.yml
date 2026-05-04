@@ -57,8 +57,12 @@ jobs:
           REQUIRED_SERVICES="compute.googleapis.com container.googleapis.com iam.googleapis.com iamcredentials.googleapis.com sts.googleapis.com"
           for i in $(seq 1 24); do
             MISSING=""
+            ENABLED_SERVICES=$(gcloud services list \
+              --enabled \
+              --project=${PROJECT_ID} \
+              --format="value(config.name)")
             for svc in ${REQUIRED_SERVICES}; do
-              if ! gcloud services describe ${svc} --project=${PROJECT_ID} --enabled >/dev/null 2>&1; then
+              if ! printf '%s\n' "${ENABLED_SERVICES}" | grep -qx "${svc}"; then
                 MISSING="${MISSING} ${svc}"
               fi
             done
