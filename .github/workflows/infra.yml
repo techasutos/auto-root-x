@@ -35,6 +35,51 @@ jobs:
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
+      - name: Ensure required APIs are enabled
+        env:
+          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+        run: |
+          gcloud services enable \
+            serviceusage.googleapis.com \
+            compute.googleapis.com \
+            container.googleapis.com \
+            iam.googleapis.com \
+            iamcredentials.googleapis.com \
+            sts.googleapis.com \
+            artifactregistry.googleapis.com \
+            secretmanager.googleapis.com \
+            logging.googleapis.com \
+            monitoring.googleapis.com \
+            aiplatform.googleapis.com \
+            --project=${PROJECT_ID}
+
+          # Fresh projects can require a short propagation period after API enablement.
+          for i in $(seq 1 24); do
+            MISSING=""
+            for svc in compute.googleapis.com container.googleapis.com iam.googleapis.com iamcredentials.googleapis.com sts.googleapis.com; do
+              ENABLED_SERVICE=$(gcloud services list --enabled \
+                --project=${PROJECT_ID} \
+                --filter="name:${svc}" \
+                --format="value(name)")
+              if [ "${ENABLED_SERVICE}" != "${svc}" ]; then
+                MISSING="${MISSING} ${svc}"
+              fi
+            done
+
+            if [ -z "${MISSING}" ]; then
+              echo "Required APIs are enabled."
+              break
+            fi
+
+            if [ "${i}" -eq 24 ]; then
+              echo "Timed out waiting for API enablement to propagate. Missing:${MISSING}"
+              exit 1
+            fi
+
+            echo "Waiting for API enablement to propagate... (${i}/24) Missing:${MISSING}"
+            sleep 10
+          done
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 

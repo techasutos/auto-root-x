@@ -24,6 +24,9 @@ resource "google_project_service" "apis" {
 resource "google_compute_network" "vpc" {
   name                    = var.network_name
   auto_create_subnetworks = false
+
+  # Compute API can take time to propagate in fresh projects.
+  depends_on = [google_project_service.apis]
 }
 
 resource "google_compute_subnetwork" "subnet" {
@@ -108,6 +111,9 @@ resource "google_service_account_iam_member" "backend_workload_identity" {
   service_account_id = google_service_account.backend_workload.name
   role               = "roles/iam.workloadIdentityUser"
   member             = "serviceAccount:${var.project_id}.svc.id.goog[${var.k8s_namespace}/${var.backend_ksa_name}]"
+
+  # The workload pool (${project_id}.svc.id.goog) is provisioned with the GKE cluster.
+  depends_on = [google_container_cluster.primary]
 }
 
 resource "google_container_node_pool" "nodes" {
