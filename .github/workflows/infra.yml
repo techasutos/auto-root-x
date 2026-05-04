@@ -54,14 +54,11 @@ jobs:
             --project=${PROJECT_ID}
 
           # Fresh projects can require a short propagation period after API enablement.
+          REQUIRED_SERVICES="compute.googleapis.com container.googleapis.com iam.googleapis.com iamcredentials.googleapis.com sts.googleapis.com"
           for i in $(seq 1 24); do
             MISSING=""
-            for svc in compute.googleapis.com container.googleapis.com iam.googleapis.com iamcredentials.googleapis.com sts.googleapis.com; do
-              ENABLED_SERVICE=$(gcloud services list --enabled \
-                --project=${PROJECT_ID} \
-                --filter="name:${svc}" \
-                --format="value(name)")
-              if [ "${ENABLED_SERVICE}" != "${svc}" ]; then
+            for svc in ${REQUIRED_SERVICES}; do
+              if ! gcloud services describe ${svc} --project=${PROJECT_ID} --enabled >/dev/null 2>&1; then
                 MISSING="${MISSING} ${svc}"
               fi
             done
