@@ -1,4 +1,4 @@
-import type { AddPluginRequest, AdminPluginStatus, AnalysisResult, ApiErrorResponse, PluginMeta, ServiceNowTicketRequest, ServiceNowTicketResponse } from './types'
+import type { AddPluginRequest, AdminPluginStatus, AgentRequest, AgentResult, AnalysisResult, ApiErrorResponse, PluginMeta, ServiceNowTicketRequest, ServiceNowTicketResponse } from './types'
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, {
@@ -34,6 +34,13 @@ export function analyze(analyzerId: string, payload: Record<string, string>): Pr
   return request<AnalysisResult>('/api/analyze', {
     method: 'POST',
     body: JSON.stringify({ analyzerId, payload }),
+  })
+}
+
+export function runAgent(payload: AgentRequest): Promise<AgentResult> {
+  return request<AgentResult>('/api/agent/analyze', {
+    method: 'POST',
+    body: JSON.stringify(payload),
   })
 }
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Shield, ScrollText, Package, Puzzle, Activity, CheckCircle, AlertTriangle } from 'lucide-react'
+import { Shield, ScrollText, Package, Puzzle, Activity, CheckCircle, AlertTriangle, Sparkles } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { getPlugins, getAdminPlugins } from '@/api'
@@ -13,6 +13,7 @@ const iconMap: Record<string, React.ElementType> = {
 }
 
 const quickLinks = [
+  { label: 'Agent Triage', desc: 'Let Gemini route the issue', to: '/agent', icon: Sparkles, color: 'text-cyan-400', bg: 'bg-cyan-500/10' },
   { label: 'Logs Analyzer', desc: 'Analyze GCP logs with AI', to: '/logs', icon: ScrollText, color: 'text-blue-400', bg: 'bg-blue-500/10' },
   { label: 'Image Scanner', desc: 'Scan container vulnerabilities', to: '/image', icon: Shield, color: 'text-red-400', bg: 'bg-red-500/10' },
   { label: 'OSS Scanner', desc: 'Check open-source dependencies', to: '/oss', icon: Package, color: 'text-purple-400', bg: 'bg-purple-500/10' },

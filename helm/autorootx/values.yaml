@@ -53,6 +53,21 @@ backend:
     gcpProject: "auto-root-x-495307"
     gcpRegion: "us-central1"
     vertexModel: "gemini-1.5-pro"
+    vertexRetryMaxAttempts: "3"
+    vertexRetryInitialBackoffMs: "400"
+    vertexRetryMaxBackoffMs: "4000"
+    vertexCircuitFailureThreshold: "5"
+    vertexCircuitOpenDurationMs: "30000"
+    vertexRateLimitMaxCallsPerMinute: "60"
+    vertexCostInputPer1kUsd: "0.00035"
+    vertexCostOutputPer1kUsd: "0.00105"
+    trivyEnabled: "true"
+    trivyUrl: "http://localhost:4954"
+    trivyScanEndpoint: "/v1/scan"
+    trivyExpectedMajor: "0"
+    logsLookbackMinutes: "30"
+    logsMaxEntries: "200"
+    logsFilter: ""
     serviceNowMockMode: "true"
     serviceNowUrl: ""
     serviceNowUser: ""
@@ -63,6 +78,43 @@ backend:
           name: autorootx-secrets
           key: servicenow-password
           optional: true
+  trivy:
+    enabled: true
+    image:
+      repository: aquasec/trivy
+      tag: 0.53.0
+      pullPolicy: IfNotPresent
+    listen: "0.0.0.0:4954"
+    port: 4954
+    securityContext:
+      runAsNonRoot: false
+      runAsUser: 0
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: ["ALL"]
+      readOnlyRootFilesystem: false
+    resources:
+      requests:
+        cpu: 200m
+        memory: 256Mi
+      limits:
+        cpu: "1"
+        memory: 1Gi
+    readinessProbe:
+      path: /healthz
+      initialDelaySeconds: 15
+      periodSeconds: 10
+    livenessProbe:
+      path: /healthz
+      initialDelaySeconds: 30
+      periodSeconds: 10
+    cache:
+      enabled: true
+      mountPath: /root/.cache/trivy
+    dockerConfig:
+      enabled: false
+      secretName: regcred
+      mountPath: /root/.docker
 
 frontend:
   replicaCount: 1

@@ -29,7 +29,23 @@ export interface AnalysisResult {
   fix?: string
   severity?: string
   confidence?: string
+  aiUsage?: AiUsage
   vulnerabilities?: Vulnerability[]
+}
+
+export interface AiUsage {
+  provider?: string
+  model?: string
+  callCount?: number
+  latencyMs?: number
+  retries?: number
+  inputTokens?: number
+  outputTokens?: number
+  totalTokens?: number
+  estimatedCostUsd?: number
+  errorClass?: string
+  rateLimited?: boolean
+  circuitOpen?: boolean
 }
 
 export interface ApiErrorResponse {
@@ -64,4 +80,19 @@ export interface ServiceNowTicketResponse {
   url: string
   createdAt: string
   message: string
+}
+
+export interface AgentRequest {
+  problem: string
+  context?: string
+  hints?: Record<string, unknown>
+}
+
+export interface AgentResult {
+  selectedAnalyzerId?: string
+  selectedAnalyzerName?: string
+  reason?: string
+  mode?: string
+  payload?: Record<string, unknown>
+  analysis?: AnalysisResult
 }

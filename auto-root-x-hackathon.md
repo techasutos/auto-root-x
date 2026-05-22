@@ -992,84 +992,31 @@ resource "google_project_service" "apis" {
 
 ---
 
-# ☸️ 2. KUBERNETES DEPLOYMENT
+# ☸️ 2. KUBERNETES DEPLOYMENT (HELM ONLY)
 
-## 📁 k8s/deployment.yaml
+## 📁 helm/autorootx
 
-👉 **Single pod, 2 containers (clean compromise)**
+👉 **Single deployment path: Helm chart**
 
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: autoroot
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: autoroot
-  template:
-    metadata:
-      labels:
-        app: autoroot
-    spec:
-      containers:
-
-      - name: backend
-        image: gcr.io/YOUR_PROJECT/backend:latest
-        ports:
-          - containerPort: 8080
-
-      - name: frontend
-        image: gcr.io/YOUR_PROJECT/frontend:latest
-        ports:
-          - containerPort: 3000
+```bash
+helm upgrade --install autorootx ./helm/autorootx \
+  --namespace autorootx --create-namespace
 ```
 
 ---
 
-# 🌐 3. SERVICE (EXPOSE BOTH)
+# 🌐 3. SERVICE + INGRESS (HELM MANAGED)
 
-```yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: autoroot-service
-spec:
-  type: NodePort
-  selector:
-    app: autoroot
-  ports:
-    - name: frontend
-      port: 80
-      targetPort: 3000
-    - name: backend
-      port: 8080
-      targetPort: 8080
-```
+Service and Ingress are managed only through the Helm chart templates.
+
+- Service: `helm/autorootx/templates/backend-service.yaml` and `helm/autorootx/templates/frontend-service.yaml`
+- Ingress: `helm/autorootx/templates/ingress.yaml`
+
+Do not apply raw Kubernetes manifests for networking in this flow.
 
 ---
 
-# 🌍 4. INGRESS (PUBLIC ACCESS)
-
-👉 This solves your “accessible outside world” cleanly
-
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: autoroot-ingress
-spec:
-  defaultBackend:
-    service:
-      name: autoroot-service
-      port:
-        number: 80
-```
-
----
-
-# 🔐 5. BACKEND HARDENING (IMPORTANT)
+# 🔐 4. BACKEND HARDENING (IMPORTANT)
 
 ## 🔹 CORS
 
@@ -1102,7 +1049,7 @@ server:
 
 ---
 
-# 🧠 6. CACHING LAYER (CRITICAL)
+# 🧠 5. CACHING LAYER (CRITICAL)
 
 Avoid hitting APIs repeatedly.
 
@@ -1124,7 +1071,7 @@ public class CacheService {
 
 ---
 
-# ⚙️ 7. GITHUB ACTIONS (FULL CI/CD)
+# ⚙️ 6. GITHUB ACTIONS (FULL CI/CD)
 
 ## 📁 .github/workflows/deploy.yml
 
@@ -1172,14 +1119,13 @@ jobs:
 
     - name: Deploy
       run: |
-        kubectl apply -f k8s/deployment.yaml
-        kubectl apply -f k8s/service.yaml
-        kubectl apply -f k8s/ingress.yaml
+        helm upgrade --install autorootx ./helm/autorootx \
+          --namespace autorootx --create-namespace
 ```
 
 ---
 
-# 🐳 8. DOCKERFILES
+# 🐳 7. DOCKERFILES
 
 ---
 

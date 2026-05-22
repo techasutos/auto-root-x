@@ -3,6 +3,7 @@ import { Ticket, Send, CheckCircle, AlertCircle, Loader2, ExternalLink, Plus, Tr
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Select } from '@/components/ui/select'
 import { createIncident } from '@/api'
 import type { ServiceNowTicketRequest, ServiceNowTicketResponse } from '@/types'
 
@@ -103,23 +104,21 @@ export default function ServiceNowPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <label className="text-sm font-medium">Severity <span className="text-destructive">*</span></label>
-                    <select
+                    <Select
                       value={form.severity}
-                      onChange={(e) => set('severity', e.target.value)}
-                      className="w-full rounded-lg border border-input bg-muted/40 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                    >
-                      {SEV_OPTIONS.map((s) => <option key={s}>{s}</option>)}
-                    </select>
+                      onChange={(value) => set('severity', value)}
+                      options={SEV_OPTIONS}
+                      ariaLabel="Severity"
+                    />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-sm font-medium">Analyzer</label>
-                    <select
+                    <Select
                       value={form.analyzerType}
-                      onChange={(e) => set('analyzerType', e.target.value)}
-                      className="w-full rounded-lg border border-input bg-muted/40 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                    >
-                      {ANALYZER_OPTIONS.map((a) => <option key={a}>{a}</option>)}
-                    </select>
+                      onChange={(value) => set('analyzerType', value)}
+                      options={ANALYZER_OPTIONS}
+                      ariaLabel="Analyzer"
+                    />
                   </div>
                 </div>
 

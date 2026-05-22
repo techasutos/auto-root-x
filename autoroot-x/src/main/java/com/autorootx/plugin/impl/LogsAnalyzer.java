@@ -28,14 +28,17 @@ public class LogsAnalyzer implements Analyzer {
         List<String> logData = logs.fetchErrors();
 
         String aiResult;
+        AnalysisResult r = new AnalysisResult();
         try {
-            aiResult = ai.analyze("LOGS", String.join("\n", logData));
+            VertexAIService.CallResult call = ai.analyzeWithMetrics("LOGS", String.join("\n", logData));
+            aiResult = call.text();
+            r.aiUsage = ai.toAiUsage(call);
         } catch (Exception e) {
             aiResult = "AI analysis unavailable: " + e.getMessage()
                     + "\n\nRaw log entries fetched:\n" + String.join("\n", logData);
+            r.aiUsage = ai.usageForException(e);
         }
 
-        AnalysisResult r = new AnalysisResult();
         r.summary = aiResult;
         r.severity = "UNKNOWN";
         r.confidence = "N/A";

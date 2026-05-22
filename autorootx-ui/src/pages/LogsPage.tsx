@@ -64,6 +64,26 @@ export default function LogsPage() {
             {result.confidence && <span className="text-xs text-muted-foreground">Confidence: {result.confidence}</span>}
           </div>
 
+          {result.aiUsage && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">AI Usage</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+                  <p>Latency: <span className="text-muted-foreground">{result.aiUsage.latencyMs ?? 0} ms</span></p>
+                  <p>Tokens: <span className="text-muted-foreground">{result.aiUsage.totalTokens ?? 0}</span></p>
+                  <p>Retries: <span className="text-muted-foreground">{result.aiUsage.retries ?? 0}</span></p>
+                  <p>Cost: <span className="text-muted-foreground">${(result.aiUsage.estimatedCostUsd ?? 0).toFixed(6)}</span></p>
+                  <p>Input: <span className="text-muted-foreground">{result.aiUsage.inputTokens ?? 0}</span></p>
+                  <p>Output: <span className="text-muted-foreground">{result.aiUsage.outputTokens ?? 0}</span></p>
+                  <p>Calls: <span className="text-muted-foreground">{result.aiUsage.callCount ?? 0}</span></p>
+                  <p>Error Class: <span className="text-muted-foreground">{result.aiUsage.errorClass ?? 'none'}</span></p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           <div className="grid gap-4">
             {result.summary && (
               <Card>

@@ -6,7 +6,7 @@ import {
   Package,
   Puzzle,
   Settings,
-  Activity,
+  Sparkles,
   ChevronRight,
 } from 'lucide-react'
 import { Ticket } from 'lucide-react'
@@ -16,6 +16,7 @@ const nav = [
   { label: 'Dashboard', to: '/', icon: LayoutDashboard, end: true },
   { label: 'separator', type: 'sep' as const },
   { label: 'Analyzers', type: 'heading' as const },
+  { label: 'Agent Triage', to: '/agent', icon: Sparkles },
   { label: 'Logs Analyzer', to: '/logs', icon: ScrollText },
   { label: 'Image Scanner', to: '/image', icon: Shield },
   { label: 'OSS Scanner', to: '/oss', icon: Package },
@@ -35,7 +36,11 @@ export default function AppLayout() {
       <aside className="w-60 flex flex-col shrink-0 border-r border-border bg-card">
         {/* Logo */}
         <div className="flex items-center gap-2.5 px-4 py-5 border-b border-border">
-          <Activity className="h-5 w-5 text-primary" />
+          <img
+            src="/icon.png"
+            alt="AutoRoot-X icon"
+            className="h-6 w-6"
+          />
           <span className="font-semibold text-sm tracking-wide text-foreground">AutoRoot-X</span>
         </div>
 

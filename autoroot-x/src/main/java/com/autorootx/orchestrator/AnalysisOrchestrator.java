@@ -1,5 +1,6 @@
 package com.autorootx.orchestrator;
 
+import com.autorootx.exception.ApiException;
 import com.autorootx.plugin.*;
 import com.autorootx.model.*;
 import org.slf4j.Logger;
@@ -21,6 +22,8 @@ public class AnalysisOrchestrator {
         Analyzer analyzer = registry.get(req.analyzerId);
         try {
             return analyzer.analyze(req);
+        } catch (ApiException apiException) {
+            throw apiException;
         } catch (Exception e) {
             log.error("Analyzer {} failed: {}", req.analyzerId, e.getMessage(), e);
             AnalysisResult err = new AnalysisResult();

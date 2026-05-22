@@ -4,6 +4,7 @@ import com.autorootx.model.AnalysisRequest;
 import com.autorootx.model.AnalysisResult;
 import com.autorootx.model.Vulnerability;
 import com.autorootx.plugin.Analyzer;
+import com.autorootx.service.TrivyService;
 import com.autorootx.service.VertexAIService;
 import org.springframework.stereotype.Component;
 
@@ -22,9 +23,11 @@ import java.util.List;
 public class ImageAnalyzer implements Analyzer {
 
     private final VertexAIService ai;
+    private final TrivyService trivy;
 
-    public ImageAnalyzer(VertexAIService ai) {
+    public ImageAnalyzer(VertexAIService ai, TrivyService trivy) {
         this.ai = ai;
+        this.trivy = trivy;
     }
 
     @Override public String id()       { return "IMAGE"; }
@@ -36,15 +39,27 @@ public class ImageAnalyzer implements Analyzer {
     public AnalysisResult analyze(AnalysisRequest req) {
         String image = (String) req.payload.getOrDefault("image", "unknown:latest");
 
-        List<Vulnerability> vulns = detectVulnerabilities(image);
+        TrivyService.TrivyScanResult trivyScan = trivy.scanImage(image);
+        List<Vulnerability> vulns = trivyScan.available() && !trivyScan.vulnerabilities().isEmpty()
+                ? trivyScan.vulnerabilities()
+                : detectVulnerabilities(image);
 
         // Summarize vulnerabilities and call AI for overall analysis + per-vuln fixes
         String vulnSummary = buildVulnSummary(image, vulns);
+        if (trivyScan.available()) {
+            vulnSummary += "\n\nSource: Trivy sidecar scan";
+        } else {
+            vulnSummary += "\n\nSource: Fallback static CVE dataset (Trivy unavailable)";
+        }
         String aiAnalysis;
+        AnalysisResult r = new AnalysisResult();
         try {
-            aiAnalysis = ai.analyze("IMAGE", vulnSummary);
+            VertexAIService.CallResult call = ai.analyzeWithMetrics("IMAGE", vulnSummary);
+            aiAnalysis = call.text();
+            r.aiUsage = ai.toAiUsage(call);
         } catch (Exception e) {
             aiAnalysis = "AI analysis unavailable: " + e.getMessage();
+            r.aiUsage = ai.usageForException(e);
         }
 
         // Enrich each vulnerability with AI-generated fix if not already set
@@ -54,13 +69,16 @@ public class ImageAnalyzer implements Analyzer {
             }
         }
 
-        AnalysisResult r = new AnalysisResult();
         r.summary = aiAnalysis;
         r.severity = highestSeverity(vulns);
-        r.confidence = "85%";
-        r.rootCause = "Outdated package versions in base image with known CVEs";
+        r.confidence = trivyScan.available() ? "92%" : "80%";
+        r.rootCause = trivyScan.available()
+            ? "Trivy detected vulnerable packages in the scanned container image"
+            : "Trivy sidecar unavailable, using fallback known-vulnerability dataset";
         r.impact = criticalCount(vulns) + " critical, " + highCount(vulns) + " high severity vulnerabilities detected";
-        r.fix = "Upgrade base image and update the packages listed in the vulnerability table";
+        r.fix = trivyScan.available()
+            ? "Upgrade vulnerable packages and base image versions reported by Trivy"
+            : "Upgrade base image and enable Trivy sidecar connectivity for live scan results";
         r.vulnerabilities = vulns;
         return r;
     }

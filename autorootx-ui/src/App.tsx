@@ -7,6 +7,7 @@ import OssPage from './pages/OssPage'
 import AdminPluginsPage from './pages/AdminPluginsPage'
 import SettingsPage from './pages/SettingsPage'
 import ServiceNowPage from './pages/ServiceNowPage'
+import AgentPage from './pages/AgentPage'
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
       <Routes>
         <Route element={<AppLayout />}>
           <Route index element={<DashboardPage />} />
+          <Route path="agent" element={<AgentPage />} />
           <Route path="logs" element={<LogsPage />} />
           <Route path="image" element={<ImageScanPage />} />
           <Route path="oss" element={<OssPage />} />

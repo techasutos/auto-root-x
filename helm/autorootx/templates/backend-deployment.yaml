@@ -71,3 +71,54 @@ spec:
             periodSeconds: 10
           resources:
             {{- toYaml .Values.backend.resources | nindent 12 }}
+        {{- if .Values.backend.trivy.enabled }}
+        - name: trivy-server
+          image: "{{ .Values.backend.trivy.image.repository }}:{{ .Values.backend.trivy.image.tag }}"
+          imagePullPolicy: {{ .Values.backend.trivy.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.backend.trivy.securityContext | nindent 12 }}
+          args:
+            - server
+            - --listen
+            - {{ .Values.backend.trivy.listen | quote }}
+          ports:
+            - containerPort: {{ .Values.backend.trivy.port }}
+              name: trivy
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.backend.trivy.readinessProbe.path }}
+              port: trivy
+            initialDelaySeconds: {{ .Values.backend.trivy.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.backend.trivy.readinessProbe.periodSeconds }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.backend.trivy.livenessProbe.path }}
+              port: trivy
+            initialDelaySeconds: {{ .Values.backend.trivy.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.backend.trivy.livenessProbe.periodSeconds }}
+          {{- if or .Values.backend.trivy.cache.enabled .Values.backend.trivy.dockerConfig.enabled }}
+          volumeMounts:
+            {{- if .Values.backend.trivy.cache.enabled }}
+            - name: trivy-cache
+              mountPath: {{ .Values.backend.trivy.cache.mountPath }}
+            {{- end }}
+            {{- if .Values.backend.trivy.dockerConfig.enabled }}
+            - name: trivy-docker-config
+              mountPath: {{ .Values.backend.trivy.dockerConfig.mountPath }}
+            {{- end }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.backend.trivy.resources | nindent 12 }}
+        {{- end }}
+      {{- if and .Values.backend.trivy.enabled (or .Values.backend.trivy.cache.enabled .Values.backend.trivy.dockerConfig.enabled) }}
+      volumes:
+        {{- if .Values.backend.trivy.cache.enabled }}
+        - name: trivy-cache
+          emptyDir: {}
+        {{- end }}
+        {{- if .Values.backend.trivy.dockerConfig.enabled }}
+        - name: trivy-docker-config
+          secret:
+            secretName: {{ .Values.backend.trivy.dockerConfig.secretName }}
+        {{- end }}
+      {{- end }}

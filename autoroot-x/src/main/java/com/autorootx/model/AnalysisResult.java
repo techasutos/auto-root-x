@@ -10,6 +10,7 @@ public class AnalysisResult {
 
     public String severity;
     public String confidence;
+    public AiUsage aiUsage;
 
     /** Populated by ImageAnalyzer with structured vulnerability entries. */
     public List<Vulnerability> vulnerabilities;
