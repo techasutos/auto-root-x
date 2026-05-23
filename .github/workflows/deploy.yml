@@ -145,3 +145,25 @@ jobs:
             --set-string backend.trivy.reportPath=/var/run/autorootx/trivy/report.json \
             --set frontend.image.repository=${REGION}-docker.pkg.dev/${PROJECT_ID}/${GAR_REPOSITORY}/frontend \
             --set frontend.image.tag=${GITHUB_SHA}
+
+      - name: Verify backend API is reachable from frontend path
+        run: |
+          BACKEND_DEPLOYMENT=${HELM_RELEASE}-autorootx-backend
+          FRONTEND_DEPLOYMENT=${HELM_RELEASE}-autorootx-frontend
+          FRONTEND_SERVICE=${HELM_RELEASE}-autorootx-frontend
+          BACKEND_SERVICE=${HELM_RELEASE}-autorootx-backend
+          SMOKE_POD=autorootx-api-smoke-${GITHUB_RUN_ID}
+
+          kubectl -n ${HELM_NAMESPACE} rollout status deployment/${BACKEND_DEPLOYMENT} --timeout=240s
+          kubectl -n ${HELM_NAMESPACE} rollout status deployment/${FRONTEND_DEPLOYMENT} --timeout=240s
+
+          kubectl -n ${HELM_NAMESPACE} get pods -o wide
+          kubectl -n ${HELM_NAMESPACE} get svc ${BACKEND_SERVICE} ${FRONTEND_SERVICE}
+          kubectl -n ${HELM_NAMESPACE} get endpoints ${BACKEND_SERVICE} ${FRONTEND_SERVICE}
+
+          kubectl -n ${HELM_NAMESPACE} run ${SMOKE_POD} \
+            --rm \
+            --attach \
+            --restart=Never \
+            --image=curlimages/curl:8.10.1 \
+            --command -- sh -c "curl -fsS http://${BACKEND_SERVICE}:8080/api/health && echo && curl -fsS http://${FRONTEND_SERVICE}/api/health"

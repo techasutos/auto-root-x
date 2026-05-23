@@ -13,10 +13,11 @@ spec:
       app.kubernetes.io/component: frontend
   template:
     metadata:
-      {{- with .Values.global.podAnnotations }}
       annotations:
+        checksum/frontend-nginx-config: {{ include (print $.Template.BasePath "/frontend-nginx-configmap.yaml") . | sha256sum }}
+        {{- with .Values.global.podAnnotations }}
         {{- toYaml .Values.global.podAnnotations | nindent 8 }}
-      {{- end }}
+        {{- end }}
       labels:
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/component: frontend

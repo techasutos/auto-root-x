@@ -5,7 +5,13 @@ metadata:
   name: {{ include "autorootx.fullname" . }}
   labels:
     {{- include "autorootx.labels" . | nindent 4 }}
-  {{- with .Values.ingress.annotations }}
+  {{- $annotations := dict }}
+  {{- range $key, $value := .Values.ingress.annotations }}
+    {{- if $value }}
+      {{- $_ := set $annotations $key $value }}
+    {{- end }}
+  {{- end }}
+  {{- with $annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
@@ -13,15 +19,19 @@ spec:
   {{- if .Values.ingress.className }}
   ingressClassName: {{ .Values.ingress.className }}
   {{- end }}
-  {{- if and .Values.ingress.tls.enabled .Values.ingress.tls.secretName }}
+  {{- if and .Values.ingress.tls.enabled .Values.ingress.tls.secretName .Values.ingress.host }}
   tls:
     - hosts:
-        - {{ .Values.ingress.host }}
+        - {{ .Values.ingress.host | quote }}
       secretName: {{ .Values.ingress.tls.secretName }}
   {{- end }}
   rules:
-    - host: {{ .Values.ingress.host }}
+    {{- if .Values.ingress.host }}
+    - host: {{ .Values.ingress.host | quote }}
       http:
+    {{- else }}
+    - http:
+    {{- end }}
         paths:
           - path: /api
             pathType: {{ .Values.ingress.pathType }}

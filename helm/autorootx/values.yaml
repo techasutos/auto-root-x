@@ -158,10 +158,10 @@ ingress:
   enabled: true
   className: "gce"
   annotations:
-    kubernetes.io/ingress.allow-http: "false"
+    kubernetes.io/ingress.allow-http: "true"
     kubernetes.io/ingress.global-static-ip-name: ""
     networking.gke.io/managed-certificates: ""
-  host: autorootx.example.com
+  host: ""
   pathType: Prefix
   tls:
     enabled: false
