@@ -8,6 +8,7 @@ output "cluster_endpoint" {
   value       = google_container_cluster.primary.endpoint
 }
 
+
 output "network_name" {
   description = "VPC network name"
   value       = google_compute_network.vpc.name

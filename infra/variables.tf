@@ -9,6 +9,7 @@ variable "region" {
   default     = "us-central1"
 }
 
+
 variable "cluster_name" {
   description = "GKE cluster name"
   type        = string
