@@ -14,4 +14,8 @@ public class AnalysisResult {
 
     /** Populated by ImageAnalyzer with structured vulnerability entries. */
     public List<Vulnerability> vulnerabilities;
+
+    /** Evidence used by the AI agent/control-plane flow. */
+    public List<EvidenceFinding> evidence;
+    public List<String> evidenceSources;
 }

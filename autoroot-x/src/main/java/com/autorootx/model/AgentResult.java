@@ -1,5 +1,6 @@
 package com.autorootx.model;
 
+import java.util.List;
 import java.util.Map;
 
 public class AgentResult {
@@ -9,4 +10,6 @@ public class AgentResult {
     public String mode;
     public Map<String, Object> payload;
     public AnalysisResult analysis;
+    public List<String> selectedSources;
+    public EvidenceBundle evidenceBundle;
 }

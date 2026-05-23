@@ -75,7 +75,7 @@ public class GcpLogService {
         EntryListOption[] options;
         if (projectId != null && !projectId.isBlank() && !"my-gcp-project".equals(projectId)) {
             options = new EntryListOption[] {
-                    EntryListOption.resourceNames("projects/" + projectId),
+                    Logging.EntryListOption.organization("projects/" + projectId),
                     EntryListOption.filter(filter),
                     EntryListOption.pageSize(maxEntries)
             };
