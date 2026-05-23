@@ -30,21 +30,9 @@ public class OssAnalyzer implements Analyzer {
             if (dependencies.isEmpty()) {
                 throw new IllegalArgumentException("Provide dependency or dependencies in the payload");
             }
-<<<<<<< Updated upstream
-
-            StringBuilder result = new StringBuilder();
-            for (String dependency : dependencies) {
-                result.append("## ").append(dependency).append("\n")
-                        .append(osv.scan(dependency)).append("\n\n");
-            }
-
-            AnalysisResult r = new AnalysisResult();
-            r.summary = result.toString().trim();
-=======
 
             AnalysisResult r = new AnalysisResult();
             r.summary = scanAll(dependencies);
->>>>>>> Stashed changes
             r.severity = r.summary.contains("\"vulns\"") ? "HIGH" : "LOW";
             r.confidence = "OSV";
             return r;
@@ -53,8 +41,6 @@ public class OssAnalyzer implements Analyzer {
         }
     }
 
-<<<<<<< Updated upstream
-=======
     private String scanAll(List<String> dependencies) throws Exception {
         StringBuilder result = new StringBuilder();
         for (String dependency : dependencies) {
@@ -64,7 +50,6 @@ public class OssAnalyzer implements Analyzer {
         return result.toString().trim();
     }
 
->>>>>>> Stashed changes
     private List<String> extractDependencies(Map<String, Object> payload) {
         if (payload == null || payload.isEmpty()) {
             return List.of();
@@ -73,16 +58,10 @@ public class OssAnalyzer implements Analyzer {
         List<String> dependencies = new ArrayList<>();
         for (String key : List.of("dependency", "dependencies", "package", "packages")) {
             Object value = payload.get(key);
-<<<<<<< Updated upstream
-            if (value != null) {
-                addDependency(dependencies, value);
-            }
-=======
             if (value == null) {
                 continue;
             }
             addDependency(dependencies, value);
->>>>>>> Stashed changes
         }
         return dependencies.stream()
                 .map(String::trim)
