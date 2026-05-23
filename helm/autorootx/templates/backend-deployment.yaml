@@ -71,12 +71,16 @@ spec:
             periodSeconds: 10
           resources:
             {{- toYaml .Values.backend.resources | nindent 12 }}
-<<<<<<< Updated upstream
-          {{- if .Values.backend.trivy.enabled }}
+          {{- if or .Values.backend.trivy.enabled .Values.backend.extraVolumeMounts }}
           volumeMounts:
+            {{- if .Values.backend.trivy.enabled }}
             - name: trivy-report
               mountPath: {{ .Values.backend.trivy.report.mountPath }}
               readOnly: true
+            {{- end }}
+            {{- with .Values.backend.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
           {{- end }}
         {{- if .Values.backend.trivy.enabled }}
         - name: trivy-scanner
@@ -135,8 +139,12 @@ spec:
           resources:
             {{- toYaml .Values.backend.trivy.resources | nindent 12 }}
         {{- end }}
-      {{- if .Values.backend.trivy.enabled }}
+        {{- with .Values.backend.extraContainers }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- if or .Values.backend.trivy.enabled .Values.backend.extraVolumes }}
       volumes:
+        {{- if .Values.backend.trivy.enabled }}
         - name: trivy-report
           emptyDir: {}
         {{- if .Values.backend.trivy.cache.enabled }}
@@ -148,16 +156,8 @@ spec:
           secret:
             secretName: {{ .Values.backend.trivy.dockerConfig.secretName }}
         {{- end }}
-=======
-          {{- with .Values.backend.extraVolumeMounts }}
-          volumeMounts:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
-        {{- with .Values.backend.extraContainers }}
+        {{- end }}
+        {{- with .Values.backend.extraVolumes }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
-      {{- with .Values.backend.extraVolumes }}
-      volumes:
-        {{- toYaml . | nindent 8 }}
->>>>>>> Stashed changes
       {{- end }}

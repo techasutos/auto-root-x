@@ -9,6 +9,7 @@ env:
   CLUSTER_NAME: autorootx-cluster
   HELM_RELEASE: autorootx
   HELM_NAMESPACE: autorootx
+  STATIC_IP_NAME: autorootx-ip
   TRIVY_IMAGE: aquasec/trivy:0.53.0
   TRIVY_SEVERITY: HIGH,CRITICAL
 
@@ -53,6 +54,18 @@ jobs:
             --location=${REGION} \
             --description="AutoRootX images" \
             --project=${PROJECT_ID} || true
+
+      - name: Ensure global static IP exists
+        env:
+          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+        run: |
+          if ! gcloud compute addresses describe ${STATIC_IP_NAME} --global --project=${PROJECT_ID} >/dev/null 2>&1; then
+            gcloud compute addresses create ${STATIC_IP_NAME} --global --project=${PROJECT_ID}
+          fi
+
+          STATIC_IP_ADDRESS="$(gcloud compute addresses describe ${STATIC_IP_NAME} --global --project=${PROJECT_ID} --format='value(address)')"
+          echo "STATIC_IP_ADDRESS=${STATIC_IP_ADDRESS}" >> $GITHUB_ENV
+          echo "Reserved static IP ${STATIC_IP_NAME}: ${STATIC_IP_ADDRESS}"
 
       - name: Prepare Trivy reports
         run: mkdir -p trivy-reports
@@ -144,7 +157,10 @@ jobs:
             --set-string backend.trivy.targetImage=${BACKEND_IMAGE} \
             --set-string backend.trivy.reportPath=/var/run/autorootx/trivy/report.json \
             --set frontend.image.repository=${REGION}-docker.pkg.dev/${PROJECT_ID}/${GAR_REPOSITORY}/frontend \
-            --set frontend.image.tag=${GITHUB_SHA}
+            --set frontend.image.tag=${GITHUB_SHA} \
+            --set ingress.host="" \
+            --set-string 'ingress.annotations.kubernetes\.io/ingress\.allow-http=true' \
+            --set-string 'ingress.annotations.kubernetes\.io/ingress\.global-static-ip-name='"${STATIC_IP_NAME}"
 
       - name: Verify backend API is reachable from frontend path
         run: |
@@ -169,6 +185,17 @@ jobs:
             --image=curlimages/curl:8.10.1 \
             --labels=app.kubernetes.io/instance=${HELM_RELEASE},app.kubernetes.io/component=frontend \
             --command -- sh -c "curl -fsS http://${FRONTEND_SERVICE}/ && echo && curl -fsS http://${FRONTEND_SERVICE}/api/health"
+
+      - name: Publish static URL
+        run: |
+          echo "### AutoRoot-X URL" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Static IP name: \`${STATIC_IP_NAME}\`" >> $GITHUB_STEP_SUMMARY
+          echo "Static IP address: \`${STATIC_IP_ADDRESS}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- UI: http://${STATIC_IP_ADDRESS}/" >> $GITHUB_STEP_SUMMARY
+          echo "- API health: http://${STATIC_IP_ADDRESS}/api/health" >> $GITHUB_STEP_SUMMARY
+          kubectl -n ${HELM_NAMESPACE} get ingress ${HELM_RELEASE}-autorootx || true
 
       - name: Dump API connectivity diagnostics
         if: failure()
