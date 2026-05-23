@@ -71,6 +71,7 @@ export default function AgentPage() {
   const navigate = useNavigate()
   const [problem, setProblem] = useState('Kubernetes pod is crash looping after a new deployment and logs mention a null pointer exception')
   const [context, setContext] = useState('GKE on GCP, backend service deployed through Helm, want the fastest root-cause path.')
+  const [image, setImage] = useState('')
   const [toolMode, setToolMode] = useState<'auto' | 'manual'>('auto')
   const [selectedTools, setSelectedTools] = useState<string[]>(['cloud-logging', 'gke-insights'])
   const [loading, setLoading] = useState(false)
@@ -92,7 +93,13 @@ export default function AgentPage() {
     setResult(null)
     setShowFix(false)
     try {
-      const hints = toolMode === 'manual' ? { sources: selectedTools } : undefined
+      const hints: Record<string, unknown> = {}
+      if (toolMode === 'manual') {
+        hints.sources = selectedTools
+      }
+      if (image.trim()) {
+        hints.image = image.trim()
+      }
       const res = await runAgent({ problem, context, hints })
       setResult(res)
     } catch (e: unknown) {
@@ -191,6 +198,19 @@ export default function AgentPage() {
                 onChange={(e) => setContext(e.target.value)}
                 className="w-full rounded-lg border border-input bg-muted/40 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
               />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">Container image for Trivy</label>
+              <input
+                type="text"
+                value={image}
+                onChange={(e) => setImage(e.target.value)}
+                placeholder="us-central1-docker.pkg.dev/project/repo/backend:tag"
+                className="w-full rounded-lg border border-input bg-muted/40 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+              <p className="text-xs text-muted-foreground">
+                Auto mode uses this to select Trivy. Manual mode sends it to the Trivy tool when selected.
+              </p>
             </div>
             <div className="space-y-3 rounded-lg border border-border bg-muted/20 p-3">
               <div className="flex items-center justify-between gap-3">

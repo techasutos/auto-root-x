@@ -19,9 +19,8 @@ data:
   VERTEX_COST_INPUT_PER_1K_USD: {{ .Values.backend.config.vertexCostInputPer1kUsd | quote }}
   VERTEX_COST_OUTPUT_PER_1K_USD: {{ .Values.backend.config.vertexCostOutputPer1kUsd | quote }}
   TRIVY_ENABLED: {{ .Values.backend.config.trivyEnabled | quote }}
-  TRIVY_URL: {{ .Values.backend.config.trivyUrl | quote }}
-  TRIVY_SCAN_ENDPOINT: {{ .Values.backend.config.trivyScanEndpoint | quote }}
-  TRIVY_EXPECTED_MAJOR: {{ .Values.backend.config.trivyExpectedMajor | quote }}
+  TRIVY_REPORT_PATH: {{ .Values.backend.trivy.reportPath | quote }}
+  TRIVY_REQUIRE_IMAGE_MATCH: {{ .Values.backend.config.trivyRequireImageMatch | quote }}
   LOGS_LOOKBACK_MINUTES: {{ .Values.backend.config.logsLookbackMinutes | quote }}
   LOGS_MAX_ENTRIES: {{ .Values.backend.config.logsMaxEntries | quote }}
   LOGS_FILTER: {{ .Values.backend.config.logsFilter | quote }}

@@ -9,6 +9,8 @@ env:
   CLUSTER_NAME: autorootx-cluster
   HELM_RELEASE: autorootx
   HELM_NAMESPACE: autorootx
+  TRIVY_IMAGE: aquasec/trivy:0.53.0
+  TRIVY_SEVERITY: HIGH,CRITICAL
 
 jobs:
   build-deploy:
@@ -52,23 +54,64 @@ jobs:
             --description="AutoRootX images" \
             --project=${PROJECT_ID} || true
 
-      - name: Build and Push Backend
+      - name: Prepare Trivy reports
+        run: mkdir -p trivy-reports
+
+      - name: Build Backend Image
         env:
           PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
         run: |
           BACKEND_IMAGE=${REGION}-docker.pkg.dev/${PROJECT_ID}/${GAR_REPOSITORY}/backend:${GITHUB_SHA}
           docker build -f Dockerfile/backend/dockerfile -t ${BACKEND_IMAGE} autoroot-x
-          docker push ${BACKEND_IMAGE}
           echo "BACKEND_IMAGE=${BACKEND_IMAGE}" >> $GITHUB_ENV
 
-      - name: Build and Push Frontend
+      - name: Scan Backend Image with Trivy
+        run: |
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "${GITHUB_WORKSPACE}/trivy-reports:/reports" \
+            -v trivy-cache:/root/.cache/trivy \
+            ${TRIVY_IMAGE} image \
+              --scanners vuln \
+              --severity ${TRIVY_SEVERITY} \
+              --format json \
+              --output /reports/backend-trivy.json \
+              ${BACKEND_IMAGE}
+
+      - name: Push Backend Image
+        run: docker push ${BACKEND_IMAGE}
+
+      - name: Build Frontend Image
         env:
           PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
         run: |
           FRONTEND_IMAGE=${REGION}-docker.pkg.dev/${PROJECT_ID}/${GAR_REPOSITORY}/frontend:${GITHUB_SHA}
           docker build -f Dockerfile/frontend/dockerfile -t ${FRONTEND_IMAGE} autorootx-ui
-          docker push ${FRONTEND_IMAGE}
           echo "FRONTEND_IMAGE=${FRONTEND_IMAGE}" >> $GITHUB_ENV
+
+      - name: Scan Frontend Image with Trivy
+        run: |
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "${GITHUB_WORKSPACE}/trivy-reports:/reports" \
+            -v trivy-cache:/root/.cache/trivy \
+            ${TRIVY_IMAGE} image \
+              --scanners vuln \
+              --severity ${TRIVY_SEVERITY} \
+              --format json \
+              --output /reports/frontend-trivy.json \
+              ${FRONTEND_IMAGE}
+
+      - name: Push Frontend Image
+        run: docker push ${FRONTEND_IMAGE}
+
+      - name: Upload Trivy reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-image-scan-reports
+          path: trivy-reports/*.json
+          if-no-files-found: warn
 
       - name: Get GKE credentials
         env:
@@ -93,5 +136,12 @@ jobs:
             --set backend.config.gcpRegion=${REGION} \
             --set backend.image.repository=${REGION}-docker.pkg.dev/${PROJECT_ID}/${GAR_REPOSITORY}/backend \
             --set backend.image.tag=${GITHUB_SHA} \
+            --set-string backend.config.trivyEnabled=true \
+            --set-string backend.config.trivyRequireImageMatch=true \
+            --set backend.trivy.enabled=true \
+            --set backend.trivy.image.repository=aquasec/trivy \
+            --set backend.trivy.image.tag=0.53.0 \
+            --set-string backend.trivy.targetImage=${BACKEND_IMAGE} \
+            --set-string backend.trivy.reportPath=/var/run/autorootx/trivy/report.json \
             --set frontend.image.repository=${REGION}-docker.pkg.dev/${PROJECT_ID}/${GAR_REPOSITORY}/frontend \
             --set frontend.image.tag=${GITHUB_SHA}

@@ -45,7 +45,7 @@ public class TrivyEvidenceSource implements EvidenceSource {
                     "Trivy unavailable",
                     "LOW",
                     imageRef,
-                    "Trivy sidecar did not return a live scan.",
+                    "Trivy sidecar did not return a live report: " + scan.message(),
                     scan.rawResponse()
             ));
         }

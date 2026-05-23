@@ -86,9 +86,9 @@ public class ImageAnalyzer implements Analyzer {
 
         try {
             JsonNode root = MAPPER.readTree(String.valueOf(raw));
-            return Optional.of(new TrivyService.TrivyScanResult(true, parseTrivyVulnerabilities(root), String.valueOf(raw)));
+            return Optional.of(new TrivyService.TrivyScanResult(true, parseTrivyVulnerabilities(root), String.valueOf(raw), "Trivy report supplied in request payload"));
         } catch (Exception e) {
-            return Optional.of(new TrivyService.TrivyScanResult(true, List.of(), String.valueOf(raw)));
+            return Optional.of(new TrivyService.TrivyScanResult(true, List.of(), String.valueOf(raw), "Unable to parse supplied Trivy report: " + e.getMessage()));
         }
     }
 

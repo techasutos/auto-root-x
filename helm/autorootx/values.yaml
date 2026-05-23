@@ -62,9 +62,8 @@ backend:
     vertexCostInputPer1kUsd: "0.00035"
     vertexCostOutputPer1kUsd: "0.00105"
     trivyEnabled: "true"
-    trivyUrl: "http://localhost:4954"
-    trivyScanEndpoint: "/v1/scan"
-    trivyExpectedMajor: "0"
+    trivyReportPath: "/var/run/autorootx/trivy/report.json"
+    trivyRequireImageMatch: "false"
     logsLookbackMinutes: "30"
     logsMaxEntries: "200"
     logsFilter: ""
@@ -84,8 +83,9 @@ backend:
       repository: aquasec/trivy
       tag: 0.53.0
       pullPolicy: IfNotPresent
-    listen: "0.0.0.0:4954"
-    port: 4954
+    targetImage: ""
+    intervalSeconds: 3600
+    reportPath: "/var/run/autorootx/trivy/report.json"
     securityContext:
       runAsNonRoot: false
       runAsUser: 0
@@ -101,13 +101,13 @@ backend:
         cpu: "1"
         memory: 1Gi
     readinessProbe:
-      path: /healthz
-      initialDelaySeconds: 15
+      initialDelaySeconds: 45
       periodSeconds: 10
     livenessProbe:
-      path: /healthz
       initialDelaySeconds: 30
       periodSeconds: 10
+    report:
+      mountPath: /var/run/autorootx/trivy
     cache:
       enabled: true
       mountPath: /root/.cache/trivy

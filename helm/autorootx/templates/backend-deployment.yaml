@@ -71,33 +71,58 @@ spec:
             periodSeconds: 10
           resources:
             {{- toYaml .Values.backend.resources | nindent 12 }}
+          {{- if .Values.backend.trivy.enabled }}
+          volumeMounts:
+            - name: trivy-report
+              mountPath: {{ .Values.backend.trivy.report.mountPath }}
+              readOnly: true
+          {{- end }}
         {{- if .Values.backend.trivy.enabled }}
-        - name: trivy-server
+        - name: trivy-scanner
           image: "{{ .Values.backend.trivy.image.repository }}:{{ .Values.backend.trivy.image.tag }}"
           imagePullPolicy: {{ .Values.backend.trivy.image.pullPolicy }}
           securityContext:
             {{- toYaml .Values.backend.trivy.securityContext | nindent 12 }}
+          command:
+            - /bin/sh
+            - -c
           args:
-            - server
-            - --listen
-            - {{ .Values.backend.trivy.listen | quote }}
-          ports:
-            - containerPort: {{ .Values.backend.trivy.port }}
-              name: trivy
+            - |
+              set -eu
+              mkdir -p "$(dirname "$TRIVY_REPORT_PATH")"
+              while true; do
+                echo "Scanning ${TRIVY_TARGET_IMAGE} with Trivy"
+                trivy image --format json --output "${TRIVY_REPORT_PATH}.tmp" "${TRIVY_TARGET_IMAGE}" \
+                  && mv "${TRIVY_REPORT_PATH}.tmp" "${TRIVY_REPORT_PATH}" \
+                  || echo "Trivy scan failed; keeping previous report if present"
+                sleep "${TRIVY_INTERVAL_SECONDS}"
+              done
+          env:
+            - name: TRIVY_TARGET_IMAGE
+              value: {{ default (printf "%s:%s" .Values.backend.image.repository .Values.backend.image.tag) .Values.backend.trivy.targetImage | quote }}
+            - name: TRIVY_REPORT_PATH
+              value: {{ .Values.backend.trivy.reportPath | quote }}
+            - name: TRIVY_INTERVAL_SECONDS
+              value: {{ .Values.backend.trivy.intervalSeconds | quote }}
           readinessProbe:
-            httpGet:
-              path: {{ .Values.backend.trivy.readinessProbe.path }}
-              port: trivy
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - test -s "$TRIVY_REPORT_PATH"
             initialDelaySeconds: {{ .Values.backend.trivy.readinessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.backend.trivy.readinessProbe.periodSeconds }}
           livenessProbe:
-            httpGet:
-              path: {{ .Values.backend.trivy.livenessProbe.path }}
-              port: trivy
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - test -d "$(dirname "$TRIVY_REPORT_PATH")"
             initialDelaySeconds: {{ .Values.backend.trivy.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.backend.trivy.livenessProbe.periodSeconds }}
-          {{- if or .Values.backend.trivy.cache.enabled .Values.backend.trivy.dockerConfig.enabled }}
           volumeMounts:
+            - name: trivy-report
+              mountPath: {{ .Values.backend.trivy.report.mountPath }}
             {{- if .Values.backend.trivy.cache.enabled }}
             - name: trivy-cache
               mountPath: {{ .Values.backend.trivy.cache.mountPath }}
@@ -106,12 +131,13 @@ spec:
             - name: trivy-docker-config
               mountPath: {{ .Values.backend.trivy.dockerConfig.mountPath }}
             {{- end }}
-          {{- end }}
           resources:
             {{- toYaml .Values.backend.trivy.resources | nindent 12 }}
         {{- end }}
-      {{- if and .Values.backend.trivy.enabled (or .Values.backend.trivy.cache.enabled .Values.backend.trivy.dockerConfig.enabled) }}
+      {{- if .Values.backend.trivy.enabled }}
       volumes:
+        - name: trivy-report
+          emptyDir: {}
         {{- if .Values.backend.trivy.cache.enabled }}
         - name: trivy-cache
           emptyDir: {}
