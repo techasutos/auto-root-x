@@ -132,6 +132,14 @@ frontend:
     repository: us-central1-docker.pkg.dev/YOUR_PROJECT/autorootx/frontend
     tag: latest
     pullPolicy: IfNotPresent
+  waitForBackend:
+    enabled: true
+    maxAttempts: 30
+    sleepSeconds: 5
+    image:
+      repository: curlimages/curl
+      tag: 8.10.1
+      pullPolicy: IfNotPresent
   containerPort: 8080
   service:
     type: ClusterIP

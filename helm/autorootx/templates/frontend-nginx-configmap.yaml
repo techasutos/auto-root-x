@@ -10,6 +10,8 @@ data:
     server {
         listen 8080;
         server_name _;
+        resolver kube-dns.kube-system.svc.cluster.local valid=10s ipv6=off;
+        set $autorootx_backend "http://{{ include "autorootx.fullname" . }}-backend.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.backend.service.port }}";
 
         root /usr/share/nginx/html;
         index index.html;
@@ -20,7 +22,9 @@ data:
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_pass http://{{ include "autorootx.fullname" . }}-backend.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.backend.service.port }};
+            proxy_connect_timeout 5s;
+            proxy_read_timeout 60s;
+            proxy_pass $autorootx_backend;
         }
 
         location /api/ {
@@ -29,7 +33,9 @@ data:
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_pass http://{{ include "autorootx.fullname" . }}-backend.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.backend.service.port }};
+            proxy_connect_timeout 5s;
+            proxy_read_timeout 60s;
+            proxy_pass $autorootx_backend;
         }
 
         location / {

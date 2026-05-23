@@ -40,6 +40,29 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- if .Values.frontend.waitForBackend.enabled }}
+      initContainers:
+        - name: wait-for-backend
+          image: "{{ .Values.frontend.waitForBackend.image.repository }}:{{ .Values.frontend.waitForBackend.image.tag }}"
+          imagePullPolicy: {{ .Values.frontend.waitForBackend.image.pullPolicy }}
+          command:
+            - sh
+            - -c
+          args:
+            - |
+              set -eu
+              url="http://{{ include "autorootx.fullname" . }}-backend:{{ .Values.backend.service.port }}/api/health"
+              for i in $(seq 1 {{ .Values.frontend.waitForBackend.maxAttempts }}); do
+                if curl -fsS "$url"; then
+                  echo "Backend API is reachable at $url"
+                  exit 0
+                fi
+                echo "Waiting for backend API at $url (${i}/{{ .Values.frontend.waitForBackend.maxAttempts }})"
+                sleep {{ .Values.frontend.waitForBackend.sleepSeconds }}
+              done
+              echo "Backend API did not become reachable at $url"
+              exit 1
+      {{- end }}
       containers:
         - name: frontend
           image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}"
@@ -51,7 +74,7 @@ spec:
               name: http
           readinessProbe:
             httpGet:
-              path: /
+              path: /api/health
               port: http
             initialDelaySeconds: 5
             periodSeconds: 10
