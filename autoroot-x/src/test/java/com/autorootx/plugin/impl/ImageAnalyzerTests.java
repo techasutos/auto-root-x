@@ -2,7 +2,9 @@ package com.autorootx.plugin.impl;
 
 import com.autorootx.model.AnalysisRequest;
 import com.autorootx.model.AnalysisResult;
+import com.autorootx.service.TrivyService;
 import com.autorootx.service.VertexAIService;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -14,7 +16,7 @@ class ImageAnalyzerTests {
     @Test
     void appendsTrivyScanSummaryToVertexPrompt() {
         CapturingVertexAIService ai = new CapturingVertexAIService();
-        ImageAnalyzer analyzer = new ImageAnalyzer(ai);
+        ImageAnalyzer analyzer = new ImageAnalyzer(ai, new TrivyService());
 
         AnalysisRequest request = new AnalysisRequest();
         request.analyzerId = "IMAGE";
@@ -61,11 +63,28 @@ class ImageAnalyzerTests {
         private String analyzerType;
         private String prompt;
 
+        private CapturingVertexAIService() {
+            super(new SimpleMeterRegistry());
+        }
+
         @Override
-        public String analyze(String analyzerType, String input) {
+        public CallResult analyzeWithMetrics(String analyzerType, String input) {
             this.analyzerType = analyzerType;
             this.prompt = input;
-            return "vertex remediation";
+            return new CallResult(
+                    "vertex remediation",
+                    "test",
+                    "test-model",
+                    1,
+                    0,
+                    10,
+                    10,
+                    20,
+                    0.0,
+                    null,
+                    false,
+                    false
+            );
         }
     }
 }

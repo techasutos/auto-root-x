@@ -67,6 +67,10 @@ public class EvidenceContext {
         return String.valueOf(value).toLowerCase(Locale.ROOT).contains(sourceId.toLowerCase(Locale.ROOT));
     }
 
+    public boolean hasRequestedSources() {
+        return hint("sources").or(() -> hint("selectedSources")).isPresent();
+    }
+
     private String safe(Object value) {
         return value == null ? "" : String.valueOf(value);
     }

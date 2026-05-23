@@ -30,7 +30,7 @@ export function getPlugins(): Promise<PluginMeta[]> {
   return request<PluginMeta[]>('/api/plugins')
 }
 
-export function analyze(analyzerId: string, payload: Record<string, string>): Promise<AnalysisResult> {
+export function analyze(analyzerId: string, payload: Record<string, unknown>): Promise<AnalysisResult> {
   return request<AnalysisResult>('/api/analyze', {
     method: 'POST',
     body: JSON.stringify({ analyzerId, payload }),

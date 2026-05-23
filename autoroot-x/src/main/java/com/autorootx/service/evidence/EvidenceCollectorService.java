@@ -24,7 +24,9 @@ public class EvidenceCollectorService {
         EvidenceBundle bundle = new EvidenceBundle();
 
         for (EvidenceSource source : sources) {
-            boolean selected = context.requestedSource(source.id()) || source.supports(context);
+            boolean selected = context.hasRequestedSources()
+                    ? context.requestedSource(source.id())
+                    : source.supports(context);
             if (!selected) {
                 continue;
             }

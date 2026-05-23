@@ -31,6 +31,8 @@ export interface AnalysisResult {
   confidence?: string
   aiUsage?: AiUsage
   vulnerabilities?: Vulnerability[]
+  evidence?: EvidenceFinding[]
+  evidenceSources?: string[]
 }
 
 export interface AiUsage {
@@ -95,4 +97,23 @@ export interface AgentResult {
   mode?: string
   payload?: Record<string, unknown>
   analysis?: AnalysisResult
+  selectedSources?: string[]
+  evidenceBundle?: EvidenceBundle
+}
+
+export interface EvidenceFinding {
+  source?: string
+  category?: string
+  title?: string
+  severity?: string
+  resource?: string
+  summary?: string
+  raw?: string
+  metadata?: Record<string, unknown>
+}
+
+export interface EvidenceBundle {
+  selectedSources: string[]
+  findings: EvidenceFinding[]
+  warnings: string[]
 }

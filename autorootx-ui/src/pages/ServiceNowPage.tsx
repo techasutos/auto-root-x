@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { Ticket, Send, CheckCircle, AlertCircle, Loader2, ExternalLink, Plus, Trash2 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -8,7 +9,7 @@ import { createIncident } from '@/api'
 import type { ServiceNowTicketRequest, ServiceNowTicketResponse } from '@/types'
 
 const SEV_OPTIONS = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW']
-const ANALYZER_OPTIONS = ['LOGS', 'IMAGE', 'OSS', 'GENERIC']
+const ANALYZER_OPTIONS = ['AUTO', 'LOGS', 'IMAGE', 'OSS', 'GENERIC']
 
 const SEV_VARIANT: Record<string, 'critical' | 'high' | 'medium' | 'low' | 'default'> = {
   CRITICAL: 'critical',
@@ -23,6 +24,7 @@ interface TicketRecord extends ServiceNowTicketResponse {
 }
 
 export default function ServiceNowPage() {
+  const location = useLocation()
   const [form, setForm] = useState<ServiceNowTicketRequest>({
     title: '',
     description: '',
@@ -34,6 +36,24 @@ export default function ServiceNowPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [tickets, setTickets] = useState<TicketRecord[]>([])
+
+  useEffect(() => {
+    const state = location.state as { draftIncident?: Partial<ServiceNowTicketRequest> } | null
+    const draft = state?.draftIncident
+    if (!draft) {
+      return
+    }
+
+    setForm((prev) => ({
+      ...prev,
+      title: draft.title ?? prev.title,
+      description: draft.description ?? prev.description,
+      severity: draft.severity ?? prev.severity,
+      analyzerType: draft.analyzerType ?? prev.analyzerType,
+      analysisSummary: draft.analysisSummary ?? prev.analysisSummary,
+      affectedComponent: draft.affectedComponent ?? prev.affectedComponent,
+    }))
+  }, [location.state])
 
   function set(key: keyof ServiceNowTicketRequest, value: string) {
     setForm((prev) => ({ ...prev, [key]: value }))
