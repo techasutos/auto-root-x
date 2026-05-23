@@ -109,7 +109,7 @@ spec:
               command:
                 - /bin/sh
                 - -c
-                - test -s "$TRIVY_REPORT_PATH"
+                - test -d "$(dirname "$TRIVY_REPORT_PATH")"
             initialDelaySeconds: {{ .Values.backend.trivy.readinessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.backend.trivy.readinessProbe.periodSeconds }}
           livenessProbe:
