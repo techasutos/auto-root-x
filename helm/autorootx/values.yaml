@@ -53,6 +53,7 @@ backend:
     gcpProject: "auto-root-x-495307"
     gcpRegion: "us-central1"
     vertexModel: "gemini-1.5-pro"
+<<<<<<< Updated upstream
     vertexRetryMaxAttempts: "3"
     vertexRetryInitialBackoffMs: "400"
     vertexRetryMaxBackoffMs: "4000"
@@ -67,6 +68,9 @@ backend:
     logsLookbackMinutes: "30"
     logsMaxEntries: "200"
     logsFilter: ""
+=======
+    trivyReportPath: ""
+>>>>>>> Stashed changes
     serviceNowMockMode: "true"
     serviceNowUrl: ""
     serviceNowUser: ""
@@ -77,6 +81,7 @@ backend:
           name: autorootx-secrets
           key: servicenow-password
           optional: true
+<<<<<<< Updated upstream
   trivy:
     enabled: true
     image:
@@ -115,6 +120,11 @@ backend:
       enabled: false
       secretName: regcred
       mountPath: /root/.docker
+=======
+  extraVolumeMounts: []
+  extraVolumes: []
+  extraContainers: []
+>>>>>>> Stashed changes
 
 frontend:
   replicaCount: 1

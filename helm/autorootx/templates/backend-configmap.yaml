@@ -10,6 +10,7 @@ data:
   GCP_PROJECT: {{ .Values.backend.config.gcpProject | quote }}
   GCP_REGION: {{ .Values.backend.config.gcpRegion | quote }}
   VERTEX_MODEL: {{ .Values.backend.config.vertexModel | quote }}
+<<<<<<< Updated upstream
   VERTEX_RETRY_MAX_ATTEMPTS: {{ .Values.backend.config.vertexRetryMaxAttempts | quote }}
   VERTEX_RETRY_INITIAL_BACKOFF_MS: {{ .Values.backend.config.vertexRetryInitialBackoffMs | quote }}
   VERTEX_RETRY_MAX_BACKOFF_MS: {{ .Values.backend.config.vertexRetryMaxBackoffMs | quote }}
@@ -24,6 +25,9 @@ data:
   LOGS_LOOKBACK_MINUTES: {{ .Values.backend.config.logsLookbackMinutes | quote }}
   LOGS_MAX_ENTRIES: {{ .Values.backend.config.logsMaxEntries | quote }}
   LOGS_FILTER: {{ .Values.backend.config.logsFilter | quote }}
+=======
+  TRIVY_REPORT_PATH: {{ .Values.backend.config.trivyReportPath | quote }}
+>>>>>>> Stashed changes
   SERVICENOW_MOCK: {{ .Values.backend.config.serviceNowMockMode | quote }}
   SERVICENOW_URL: {{ .Values.backend.config.serviceNowUrl | quote }}
   SERVICENOW_USER: {{ .Values.backend.config.serviceNowUser | quote }}

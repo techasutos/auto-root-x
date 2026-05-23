@@ -35,6 +35,7 @@ Create a values file for environment-specific tuning and install with:
 helm upgrade --install autorootx .\helm\autorootx -f values-prod.yaml
 ```
 
+<<<<<<< Updated upstream
 ## 4. Trivy sidecar image scanning
 
 The backend pod can include a Trivy scanner sidecar. The sidecar scans an image
@@ -75,3 +76,40 @@ backend:
       enabled: true
       secretName: regcred
 ```
+=======
+## 4. Optional Trivy sidecar report
+
+If Trivy runs as a sidecar in the backend pod, write JSON output to a shared
+volume and point the backend at that file:
+
+```yaml
+backend:
+  config:
+    trivyReportPath: /var/run/autorootx/trivy/report.json
+  extraVolumes:
+    - name: trivy-report
+      emptyDir: {}
+  extraVolumeMounts:
+    - name: trivy-report
+      mountPath: /var/run/autorootx/trivy
+  extraContainers:
+    - name: trivy
+      image: aquasec/trivy:latest
+      command: ["/bin/sh", "-c"]
+      args:
+        - >
+          while true; do
+            trivy image --format json --output /var/run/autorootx/trivy/report.json "$TARGET_IMAGE";
+            sleep 3600;
+          done
+      env:
+        - name: TARGET_IMAGE
+          value: us-central1-docker.pkg.dev/YOUR_PROJECT/autorootx/backend:latest
+      volumeMounts:
+        - name: trivy-report
+          mountPath: /var/run/autorootx/trivy
+```
+
+The backend can also accept a Trivy JSON payload directly with
+`analyzerId=IMAGE` or `AUTO` using the `trivyReport` field.
+>>>>>>> Stashed changes

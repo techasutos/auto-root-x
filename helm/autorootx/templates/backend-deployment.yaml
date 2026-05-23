@@ -71,6 +71,7 @@ spec:
             periodSeconds: 10
           resources:
             {{- toYaml .Values.backend.resources | nindent 12 }}
+<<<<<<< Updated upstream
           {{- if .Values.backend.trivy.enabled }}
           volumeMounts:
             - name: trivy-report
@@ -147,4 +148,16 @@ spec:
           secret:
             secretName: {{ .Values.backend.trivy.dockerConfig.secretName }}
         {{- end }}
+=======
+          {{- with .Values.backend.extraVolumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        {{- with .Values.backend.extraContainers }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.backend.extraVolumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+>>>>>>> Stashed changes
       {{- end }}

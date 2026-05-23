@@ -41,8 +41,11 @@ public class AnalysisOrchestrator {
         Analyzer analyzer = registry.get(analyzerId);
         try {
             return analyzer.analyze(copyForAnalyzer(req, analyzerId));
+<<<<<<< Updated upstream
         } catch (ApiException apiException) {
             throw apiException;
+=======
+>>>>>>> Stashed changes
         } catch (Exception e) {
             return failedResult(analyzerId, e);
         }
@@ -56,8 +59,11 @@ public class AnalysisOrchestrator {
             try {
                 Analyzer analyzer = registry.get(analyzerId);
                 results.add(labelResult(analyzer, analyzer.analyze(copyForAnalyzer(req, analyzerId))));
+<<<<<<< Updated upstream
             } catch (ApiException apiException) {
                 throw apiException;
+=======
+>>>>>>> Stashed changes
             } catch (Exception e) {
                 results.add(failedResult(analyzerId, e));
             }
@@ -76,8 +82,13 @@ public class AnalysisOrchestrator {
             selected.add("LOGS");
         }
 
+<<<<<<< Updated upstream
         if (hasAnyKey(payload, "image", "containerImage", "container_image", "dockerImage", "docker_image", "trivyReport")
                 || containsAny(text, "docker", "container image", "artifact registry", "gcr.io", "pkg.dev", ":latest", "trivy")) {
+=======
+        if (hasAnyKey(payload, "image", "containerImage", "container_image", "dockerImage", "docker_image")
+                || containsAny(text, "docker", "container image", "artifact registry", "gcr.io", "pkg.dev", ":latest")) {
+>>>>>>> Stashed changes
             selected.add("IMAGE");
         }
 
