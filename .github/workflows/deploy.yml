@@ -166,4 +166,4 @@ jobs:
             --attach \
             --restart=Never \
             --image=curlimages/curl:8.10.1 \
-            --command -- sh -c "curl -fsS http://${BACKEND_SERVICE}:8080/api/health && echo && curl -fsS http://${FRONTEND_SERVICE}/api/health"
+            --command -- sh -c "curl -fsS http://${FRONTEND_SERVICE}/ && echo && curl -fsS http://${FRONTEND_SERVICE}/api/health"
